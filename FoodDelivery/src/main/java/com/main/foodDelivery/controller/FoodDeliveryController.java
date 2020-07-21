@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.main.foodDelivery.dao.FoodOrdersRepo;
 import com.main.foodDelivery.dao.FoodRepo;
 import com.main.foodDelivery.dao.RestaurantRepo;
+import com.main.foodDelivery.exception.DataException;
 import com.main.foodDelivery.model.Food;
 import com.main.foodDelivery.model.FoodOrders;
 import com.main.foodDelivery.model.Restaurant;
@@ -70,7 +71,7 @@ public class FoodDeliveryController {
 	 * The userId's and Food Id's will be available from the UI during intial loading */	
 	
 	@PutMapping(value = "/addOrder", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public FoodOrders addOrder(@RequestBody FoodOrders foodOrder) {
+	public FoodOrders addOrder(@RequestBody FoodOrders foodOrder) throws DataException {
 		try {
 			FoodOrders foodOrders =orderRepo.findByFoodAndRestaurantAndUserId(foodOrder.getFood().toString(), 
 					foodOrder.getRestaurant().toString(), foodOrder.getUserId());
@@ -85,8 +86,10 @@ public class FoodDeliveryController {
 				foodOrders.setRestaurant(foodOrder.getRestaurant());
 				foodOrders.setUserAddress(foodOrder.getUserAddress());
 			}
-		}catch(Exception e){
+		}
+		catch(Exception e){
 			log.error("Adding food order failed", e);
+			throw new DataException("Update into DB failed on AddOrder",e);
 		}
 		return foodOrder;
 	}
@@ -96,12 +99,13 @@ public class FoodDeliveryController {
 	 * The deletes the food order */
 	
 	@DeleteMapping(value = "/deleteOrder", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public void deleteOrder(@RequestBody FoodOrders foodOrder) {
+	public void deleteOrder(@RequestBody FoodOrders foodOrder) throws DataException{
 		try {
 			FoodOrders foodOrders = orderRepo.getOne(foodOrder.getOrderId());
 			orderRepo.delete(foodOrders);
 		}catch(Exception e) {
 			log.error("Deleting food order failed", e);
+			throw new DataException("Delete into DB failed on DeleteOrder",e);
 		}		
 	}
 	
